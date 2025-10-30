@@ -420,51 +420,72 @@ function startHeaderScramble() {
   if (!headerEl) return;
 
   const theLetters = "abcdefghijklmnopqrstuvwxyz#%&^+=-";
-  const speed = 50; // ms per frame
+  const speed = 5; // ms per frame
   const increment = 8; // frames per step
 
-  const targetText = headerEl.textContent?.trim() || '';
-  if (!targetText) return;
+  const originalText = headerEl.textContent?.trim() || '';
+  if (!originalText) return;
 
-  // initialize
-  const clen = targetText.length;
-  let si = 0;
-  let stri = 0;
-  let block = '';
-  let fixed = '';
+  // Split into words and set up spans so each word can animate independently
+  const words = originalText.split(/(\s+)/); // keep spaces as tokens
+  headerEl.innerHTML = words
+    .map((w, idx) => {
+      // leave whitespace tokens outside of spans
+      if (/^\s+$/.test(w)) return w;
+      return `<span class="header-word" data-target="${w}"></span>`;
+    })
+    .join('');
 
-  // clear the header to prepare for animation
-  headerEl.textContent = '';
+  const wordEls = Array.from(headerEl.querySelectorAll('.header-word'));
 
-  // total iterations
-  (function rustle(i) {
-    setTimeout(function () {
-      if (--i) {
-        rustle(i);
+  // animate words sequentially
+  let current = 0;
+
+  function animateNextWord() {
+    if (current >= wordEls.length) return;
+    const el = wordEls[current];
+    const target = el.dataset.target || '';
+    el.textContent = '';
+
+    // per-word rustle
+    let si = 0;
+    let stri = 0;
+    let fixed = '';
+
+    (function rustle(i) {
+      setTimeout(function () {
+        if (--i) rustle(i);
+        nextFrame();
+        si++;
+      }, speed);
+    })(target.length * increment + 1);
+
+    function nextFrame() {
+      let block = '';
+      for (let j = 0; j < target.length - stri; j += 1) {
+        const num = Math.floor(theLetters.length * Math.random());
+        block += theLetters.charAt(num);
       }
-      nextFrame(i);
-      si = si + 1;
-    }, speed);
-  })(clen * increment + 1);
-
-  function nextFrame() {
-    block = '';
-    for (let i = 0; i < clen - stri; i += 1) {
-      const num = Math.floor(theLetters.length * Math.random());
-      const letter = theLetters.charAt(num);
-      block = block + letter;
+      if (si === increment - 1) {
+        stri++;
+      }
+      if (si === increment) {
+        fixed += target.charAt(stri - 1) || '';
+        si = 0;
+      }
+      el.textContent = fixed + block;
     }
 
-    if (si === increment - 1) {
-      stri++;
-    }
-    if (si === increment) {
-      fixed = fixed + targetText.charAt(stri - 1);
-      si = 0;
-    }
-
-    headerEl.textContent = fixed + block;
+    // when this word is done, wait a short moment and animate next
+    const totalMs = (target.length * increment + 1) * speed;
+    setTimeout(() => {
+      current++;
+      // small gap between words
+      setTimeout(animateNextWord, 120);
+    }, totalMs + 20);
   }
+
+  animateNextWord();
 }
 
 function cloneRun(run) {
