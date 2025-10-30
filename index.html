@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Flex:opsz,wght@8..144,400;8..144,600&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <title>Fuzzing Carbon Footprint Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="logo" aria-hidden="true">
+        <svg class="logo__svg" viewBox="0 0 64 64" role="img" aria-label="Fuzzing Calculator">
+          <defs>
+            <linearGradient id="logoGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00363d" />
+              <stop offset="100%" stop-color="#22a49b" />
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="16" class="logo__bg" />
+          <path class="logo__glyph logo__glyph--f" d="M18 20h18.4c3.2 0 5.8 2.6 5.8 5.8 0 2.9-2.1 5.3-4.9 5.7l-0.4 0H26v5.6h9.8c2.2 0 4 1.8 4 4s-1.8 4-4 4H26V48h-8z"/>
+          <path class="logo__glyph logo__glyph--c" d="M47.8 18c-8 0-14.5 6.5-14.5 14.5S39.8 47 47.8 47c3.9 0 7.4-1.4 10.3-4.3l-4-4.4c-1.7 1.6-3.8 2.6-6.1 2.6-4.8 0-8.6-3.8-8.6-8.4s3.8-8.4 8.6-8.4c2.3 0 4.4 0.9 6.1 2.6l4-4.4C55.2 19.4 51.7 18 47.8 18z"/>
+          <circle class="logo__spark" cx="29" cy="45" r="3.4" />
+        </svg>
+      </div>
+      <div class="header-copy">
+        <h1>Fuzzing Campaign Carbon Footprint Calculator</h1>
+        <p>Estimate the environmental impact of your fuzzing experiments in just a few clicks.</p>
+      </div>
+    </header>
+    <main class="card">
+        <div class="card__body">
+          <form id="calculator" class="calculator">
+            <div class="calculator__grid">
+              <div class="form-field">
+                <label for="provider">Cloud Provider:</label>
+                <select id="provider"></select>
+                <p class="hint" id="providerHint">Choose a provider to view its available regions.</p>
+              </div>
+              <div class="form-field">
+                <label for="region">Region / Data Centre:</label>
+                <select id="region"></select>
+                <p class="hint" id="regionHint">Region-specific efficiency and carbon data will appear here.</p>
+              </div>
+              <div class="form-field">
+                <label for="cpu">CPU Model:</label>
+                <select id="cpu"></select>
+                <p class="hint" id="cpuHint">Select a CPU to load its TDP and core count.</p>
+              </div>
+              <div class="form-field">
+                <label for="cpuCount">CPUs per Machine:</label>
+                <input type="number" id="cpuCount" value="1" min="1" step="1" />
+              </div>
+              <div class="form-field">
+                <label for="memory">Memory per Machine (GB):</label>
+                <input type="number" id="memory" value="16" min="0" step="1" />
+              </div>
+              <div class="form-field">
+                <label for="memPower">Memory Power per GB (W):</label>
+                <input type="number" id="memPower" step="0.01" />
+              </div>
+              <div class="form-field">
+                <label for="length">Campaign Length per Trial (hours):</label>
+                <input type="number" id="length" value="1" step="0.1" />
+              </div>
+            </div>
+            <fieldset class="calculator__fieldset">
+              <legend>Trial Setup</legend>
+              <div class="trial-mode-options">
+                <label class="trial-mode-option">
+                  <input type="radio" name="trialMode" value="total" checked />
+                  <span>Enter total number of trials</span>
+                </label>
+                <label class="trial-mode-option">
+                  <input type="radio" name="trialMode" value="pairs" />
+                  <span>Define by fuzzer-target pair</span>
+                </label>
+              </div>
+              <div class="trial-inputs" id="trialInputsTotal">
+                <label for="totalTrials">Total Trials (all runs):</label>
+                <input type="number" id="totalTrials" value="1" min="1" />
+              </div>
+              <div class="trial-inputs" id="trialInputsPerPair" hidden>
+                <label for="fuzzingPairs">Fuzzer × Target pairs:</label>
+                <input type="number" id="fuzzingPairs" value="1" min="1" />
+                <label for="trialsPerPair">Trials per pair:</label>
+                <input type="number" id="trialsPerPair" value="1" min="1" />
+              </div>
+            </fieldset>
+            <button type="button" class="calculator__submit" onclick="computeFootprint()">Compute</button>
+          </form>
+          <div class="results">
+            <button type="button" id="restartButtonTop" class="results__restart results__restart--floating" data-action="restart" hidden>Start another calculation</button>
+            <h2>Estimated Carbon Footprint</h2>
+            <div class="output" id="output">--</div>
+            <ul class="result-meta">
+              <li id="resultEnergy">Energy use: --</li>
+              <li id="resultRegion">Region data: --</li>
+              <li id="resultCpu">CPU data: --</li>
+            </ul>
+            <p class="disclaimer">*This is a rough estimate based on the inputs above.</p>
+            <section class="tree-impact" aria-live="polite">
+              <h3>Tree-Year Impact by Region</h3>
+              <p class="hint" id="treeImpactHint">Run a calculation to compare regions for the selected provider.</p>
+              <div class="tree-impact__table" id="treeImpactTable"></div>
+            </section>
+            <div class="results__actions">
+              <button type="button" id="restartButtonBottom" class="results__restart" data-action="restart" hidden>Start another calculation</button>
+            </div>
+          </div>
+        </div>
+    </main>
+    <footer class="app-footer">
+      <p>Data sourced from the <a href="https://calculator.green-algorithms.org/" target="_blank" rel="noopener noreferrer">Green Algorithms calculator</a>. Please review their <a href="https://green-algorithms.org/usage-notice" target="_blank" rel="noopener noreferrer">usage notice</a> before reusing these estimates.</p>
+      <p class="app-footer__note">Most of this website was generated with GPT-5 Codex.</p>
+    </footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[submodule "data/GA-data"]
+	path = data/GA-data
+	url = https://github.com/GreenAlgorithms/GA-data.git
+	branch = main
