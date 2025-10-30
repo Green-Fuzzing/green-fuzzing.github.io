@@ -12,7 +12,7 @@
   </defs>
 
   <!-- background -->
-  <rect width="128" height="128" rx="18" fill="url(#bg)" stroke="#ffffff" stroke-opacity=".32" stroke-width=".6" />
+  <rect width="64" height="64" rx="18" fill="url(#bg)" stroke="#ffffff" stroke-opacity=".32" stroke-width=".6" />
   <g transform="translate(-8 -9) scale(1.25)">
 
   <!-- outer circle + pulse -->
