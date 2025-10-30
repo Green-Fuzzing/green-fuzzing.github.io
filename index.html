@@ -5,30 +5,125 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Doto:wght@100..900&family=Glegoo:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Flex:opsz,wght@8..144,400;8..144,600&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>Fuzzing Carbon Footprint Calculator</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="ambient-scene" aria-hidden="true">
+    <span class="ambient-scene__icon ambient-scene__icon--tree" style="--origin-x: 18%; --origin-y: 24%; --size: 160px; --depth: 1.6; --offset-x: -24px; --offset-y: -26px; --delay: -1.2s;">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" fill-rule="evenodd">
+          <circle cx="32" cy="28" r="16" fill="#2de1ba" opacity="0.9"/>
+          <circle cx="26" cy="30" r="12" fill="#0f766e" opacity="0.45"/>
+          <path d="M30.5 35.5h5c1.7 0 3 1.3 3 3v10.2c0 2.1-1.7 3.8-3.8 3.8H31.3c-2.1 0-3.8-1.7-3.8-3.8V38.5c0-1.7 1.3-3 3-3z" fill="#f5fbfa" opacity="0.94"/>
+          <path d="M31.6 19.2c3 0 5.5 2.2 5.5 4.8 0 2-1.2 3.8-3.2 4.5-.7.2-1.1.7-1.1 1.4v1.6H30v-1.6c0-.7-.4-1.2-1.1-1.4-2-.7-3.2-2.5-3.2-4.5 0-2.6 2.5-4.8 5.5-4.8z" fill="#bff7ea" opacity="0.9"/>
+        </g>
+      </svg>
+    </span>
+    <span class="ambient-scene__icon ambient-scene__icon--datacenter" style="--origin-x: 22%; --origin-y: 72%; --size: 150px; --depth: 1.2; --offset-x: 24px; --delay: -2.4s;">
+      <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="24" width="52" height="36" rx="6" fill="rgba(0,65,70,0.78)" stroke="rgba(190,255,246,0.65)" stroke-width="1.8"/>
+        <rect x="18" y="32" width="12" height="6" rx="2" fill="#83f0dc" opacity="0.85"/>
+        <rect x="18" y="42" width="12" height="6" rx="2" fill="#83f0dc" opacity="0.65"/>
+        <rect x="34" y="32" width="12" height="6" rx="2" fill="#83f0dc" opacity="0.75"/>
+        <rect x="34" y="42" width="12" height="6" rx="2" fill="#83f0dc" opacity="0.5"/>
+        <rect x="50" y="32" width="6" height="6" rx="2" fill="#2de1ba" opacity="0.85"/>
+        <rect x="50" y="42" width="6" height="6" rx="2" fill="#2de1ba" opacity="0.65"/>
+        <path d="M8 24h56" stroke="rgba(194,255,248,0.4)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="ambient-scene__icon ambient-scene__icon--turbine" style="--origin-x: 76%; --origin-y: 78%; --size: 160px; --depth: 1.5; --offset-y: 8px; --delay: -3.2s;">
+      <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="48" cy="40" r="8" fill="rgba(189,255,244,0.2)" stroke="#83f0dc" stroke-width="2"/>
+          <path d="M48 48l4 32" stroke="#2de1ba" stroke-width="3.5"/>
+          <path d="M48 40l22.5-12c2.7-1.4 3.7-4.8 2-7.4a5.6 5.6 0 0 0-6.3-2.3L45 25.6" stroke="#2de1ba" stroke-width="3.5"/>
+          <path d="M48 40l-6 23.5c-.8 3.2.9 6.5 4 7.4 3 .9 6.2-1 7-4.2l3.5-13.4" stroke="#83f0dc" stroke-width="3.5"/>
+          <path d="M48 40L29 46.5c-3.1 1-4.9 4.3-4 7.5.9 3.1 4 4.9 7 4L44 54" stroke="#0f766e" stroke-width="3.5"/>
+          <path d="M36 84h24" stroke="rgba(189,255,244,0.5)" stroke-width="3"/>
+        </g>
+      </svg>
+    </span>
+    <span class="ambient-scene__icon ambient-scene__icon--battery" style="--origin-x: 70%; --origin-y: 32%; --size: 140px; --depth: 1.3; --offset-x: -20px; --delay: -0.8s;">
+      <svg viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="22" width="44" height="36" rx="10" fill="rgba(0,65,70,0.82)" stroke="rgba(190,255,246,0.55)" stroke-width="2"/>
+        <rect x="36" y="16" width="12" height="8" rx="2" fill="#83f0dc" opacity="0.8"/>
+        <rect x="26" y="30" width="24" height="10" rx="4" fill="#2de1ba" opacity="0.82"/>
+        <rect x="52" y="30" width="8" height="10" rx="3" fill="#2de1ba" opacity="0.4"/>
+        <path d="M28 46h28" stroke="#83f0dc" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+        <path d="M24 58h36" stroke="rgba(189,255,244,0.45)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="ambient-scene__icon ambient-scene__icon--calculator" style="--origin-x: 82%; --origin-y: 18%; --size: 96px; --depth: 0.9; --offset-x: 12px; --delay: -2s;">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <rect x="18" y="12" width="28" height="40" rx="8" fill="rgba(1,45,54,0.9)" stroke="rgba(190,255,246,0.65)" stroke-width="1.8"/>
+        <rect x="22" y="18" width="20" height="10" rx="3" fill="#bff7ea" opacity="0.85"/>
+        <rect x="22" y="32" width="8" height="8" rx="2" fill="#2de1ba" opacity="0.8"/>
+        <rect x="34" y="32" width="8" height="8" rx="2" fill="#2de1ba" opacity="0.6"/>
+        <rect x="22" y="42" width="8" height="8" rx="2" fill="#2de1ba" opacity="0.6"/>
+        <rect x="34" y="42" width="8" height="8" rx="2" fill="#2de1ba" opacity="0.8"/>
+      </svg>
+    </span>
+  </div>
   <div class="app-shell">
     <header class="app-header">
       <div class="logo" aria-hidden="true">
         <svg class="logo__svg" viewBox="0 0 64 64" role="img" aria-label="Fuzzing Calculator">
           <defs>
-            <linearGradient id="logoGradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#00363d" />
-              <stop offset="100%" stop-color="#22a49b" />
+            <linearGradient id="logoGradient" x1="0.1" y1="0" x2="0.95" y2="1">
+              <stop offset="0%" stop-color="#063a44" />
+              <stop offset="38%" stop-color="#0e6d63" />
+              <stop offset="100%" stop-color="#24c3a9" />
+            </linearGradient>
+            <linearGradient id="logoLeafGradient" x1="0.2" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#d1fff4" />
+              <stop offset="100%" stop-color="#81f1de" />
             </linearGradient>
           </defs>
-          <rect width="64" height="64" rx="16" class="logo__bg" />
-          <path class="logo__glyph logo__glyph--f" d="M18 20h18.4c3.2 0 5.8 2.6 5.8 5.8 0 2.9-2.1 5.3-4.9 5.7l-0.4 0H26v5.6h9.8c2.2 0 4 1.8 4 4s-1.8 4-4 4H26V48h-8z"/>
-          <path class="logo__glyph logo__glyph--c" d="M47.8 18c-8 0-14.5 6.5-14.5 14.5S39.8 47 47.8 47c3.9 0 7.4-1.4 10.3-4.3l-4-4.4c-1.7 1.6-3.8 2.6-6.1 2.6-4.8 0-8.6-3.8-8.6-8.4s3.8-8.4 8.6-8.4c2.3 0 4.4 0.9 6.1 2.6l4-4.4C55.2 19.4 51.7 18 47.8 18z"/>
-          <circle class="logo__spark" cx="29" cy="45" r="3.4" />
+          <!-- background with updated stroke and gradient from new SVG -->
+          <rect width="64" height="64" rx="18" fill="url(#logoGradient)" stroke="#ffffff" stroke-opacity=".32" stroke-width=".6" class="logo__bg" />
+          <g transform="translate(-8 -9) scale(1.25)">
+
+            <g class="logo__orbit">
+              <circle class="logo__orbit-ring" cx="32" cy="32" r="22" fill="none" stroke="#d5fff4" stroke-opacity=".72" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="52 18" />
+              <circle class="logo__orbit-pip" cx="50" cy="20" r="2.6" fill="#ffffff" fill-opacity=".92" stroke="#064e52" stroke-opacity=".38" stroke-width=".5" />
+            </g>
+
+            <!-- central tree + glow from updated favicon -->
+            <path class="logo__tree-canopy" d="M33 14.4c6.2 0 11.2 4.7 11.2 10.6 0 4.5-3 8.4-7.5 9.9-1.3.4-2.1 1.6-2.1 2.9v1.9h-8.8v-1.9c0-1.3-.8-2.5-2.1-2.9-4.5-1.5-7.6-5.4-7.6-9.9 0-5.9 5-10.6 11.2-10.6 2.1 0 4.1.6 5.9 1.6 1.7-1 3.7-1.6 5.8-1.6z" fill="#28d1b2" fill-opacity=".86" />
+            <path class="logo__tree-canopy logo__tree-canopy--secondary" d="M24.7 18.6c-3.7 1.5-6.1 5-6.1 8.8 0 3.6 2.2 6.9 5.6 8.5 1.1.5 2.3.1 3-.8l4.1-5.1c.7-.9.7-2.2-.1-3.1l-3.5-4.3c-1.1-1.3-2.9-1.8-4.5-1z" fill="#0b675f" fill-opacity=".42" />
+            <path class="logo__tree-trunk" d="M29.4 35.8h5.2c1.3 0 2.4 1 2.4 2.4V46c0 2-1.6 3.6-3.6 3.6h-2.8c-2 0-3.6-1.6-3.6-3.6v-7.8c0-1.3 1.1-2.4 2.4-2.4z" fill="#f2f5f4" fill-opacity=".94" />
+            <path class="logo__tree-glow" d="M32 19.2c2.6 0 4.8 1.9 4.8 4.2 0 1.8-1.1 3.3-2.8 3.9-.6.2-1 .7-1 1.3v1.4h-2.2v-1.4c0-.6-.4-1.1-1-1.3-1.6-.6-2.8-2.1-2.8-3.9 0-2.3 2.2-4.2 4.8-4.2z" fill="url(#logoLeafGradient)" fill-opacity=".88" />
+
+            <!-- calculator group (updated positions/colors) -->
+            <g class="logo__calculator" transform="translate(2 -9)">
+              <rect class="logo__calc-body" x="40.5" y="33.5" width="14" height="16.5" rx="2.4" fill="#102d34" fill-opacity=".85" stroke="#f2f5f4" stroke-opacity=".35" stroke-width=".6" />
+              <rect class="logo__calc-display" x="42.4" y="35.5" width="10.2" height="5" rx="1.2" fill="#f2f5f4" fill-opacity=".88" />
+              <rect class="logo__calc-button" x="43.9" y="42" width="2.6" height="2.6" rx=".6" fill="#7bf0d9" fill-opacity=".9" />
+              <rect class="logo__calc-button" x="48.5" y="42" width="2.6" height="2.6" rx=".6" fill="#7bf0d9" fill-opacity=".9" />
+              <rect class="logo__calc-button" x="43.9" y="45.4" width="2.6" height="2.6" rx=".6" fill="#7bf0d9" fill-opacity=".9" />
+              <rect class="logo__calc-button" x="48.5" y="45.4" width="2.6" height="2.6" rx=".6" fill="#7bf0d9" fill-opacity=".9" />
+            </g>
+
+            <!-- F / C glyphs with subtle stroke from new SVG -->
+            <g transform="translate(0 6) scale(1)">
+              <path class="logo__glyph logo__glyph--f" stroke="#f2f5f4" stroke-opacity=".8" stroke-width=".6" d="M16.8 32.4h10.6v4.6h-6.2v3.2h6.6v4.6h-6.6v6h-4.4z" fill="#012f36" />
+            </g>
+            <g transform="translate(4 6) scale(1)">
+              <path class="logo__glyph logo__glyph--c" stroke="#f2f5f4" stroke-opacity=".8" stroke-width=".6" d="M37.2 30.2c-6.1 0-11 4.8-11 10.6S31 51.4 37.2 51.4c2.8 0 5.4-.9 7.4-2.6l-3.2-3.3c-1.1.9-2.4 1.4-3.9 1.4-3.3 0-6-2.6-6-5.8s2.7-5.8 6-5.8c1.5 0 2.9.5 3.9 1.4l3.2-3.3c-2-1.6-4.6-2.6-7.4-2.6z" fill="#012f36" />
+            </g>
+
+          </g>
+
+          <!-- spark / extra pulse -->
+          <circle class="logo__spark" cx="47.5" cy="15.5" r="2.8" fill="#e5fff5" fill-opacity=".94" />
         </svg>
       </div>
       <div class="header-copy">
-        <h1>Fuzzing Campaign Carbon Footprint Calculator</h1>
+        <h1>Fuzzing Carbon Footprint Calculator</h1>
         <p>Estimate the environmental impact of your fuzzing experiments in just a few clicks.</p>
       </div>
     </header>
@@ -94,8 +189,14 @@
             <button type="button" class="calculator__submit" onclick="computeFootprint()">Compute</button>
           </form>
           <div class="results">
-            <button type="button" id="restartButtonTop" class="results__restart results__restart--floating" data-action="restart" hidden>Start another calculation</button>
-            <h2>Estimated Carbon Footprint</h2>
+            <div class="results__header">
+              <h2>Estimated Carbon Footprint</h2>
+              <div class="results__toolbar">
+                <!-- moved save/download controls to the bottom controls area to avoid duplicate IDs -->
+                <button type="button" id="restartButtonTop" class="results__restart results__restart--floating" data-action="restart" hidden>Start another calculation</button>
+
+              </div>
+            </div>
             <div class="output" id="output">--</div>
             <ul class="result-meta">
               <li id="resultEnergy">Energy use: --</li>
@@ -108,14 +209,24 @@
               <p class="hint" id="treeImpactHint">Run a calculation to compare regions for the selected provider.</p>
               <div class="tree-impact__table" id="treeImpactTable"></div>
             </section>
-            <div class="results__actions">
-              <button type="button" id="restartButtonBottom" class="results__restart" data-action="restart" hidden>Start another calculation</button>
+            <section class="saved-runs" aria-live="polite">
+              <div class="saved-runs__header">
+                <h3>Saved Runs</h3>
+                <button type="button" id="clearSavedRunsButton" class="saved-runs__clear" hidden>Clear all</button>
+              </div>
+              <p class="hint saved-runs__empty" id="savedRunsEmpty">Save a result to keep track of your scenarios.</p>
+              <ul class="saved-runs__list" id="savedRunsList"></ul>
+            </section>
+            <div class="results__controls">
+                <button type="button" id="saveResultButton" class="results__action-button" data-action="save-result" hidden>Save result</button>
+                <button type="button" id="downloadResultButton" class="results__action-button" data-action="download-result" hidden>Download JSON</button>
+              <button type="button" id="restartButtonBottom" class="results__action-button results__restart" data-action="restart" hidden>Start another calculation</button>
             </div>
           </div>
         </div>
     </main>
     <footer class="app-footer">
-      <p>Data sourced from the <a href="https://calculator.green-algorithms.org/" target="_blank" rel="noopener noreferrer">Green Algorithms calculator</a>. Please review their <a href="https://green-algorithms.org/usage-notice" target="_blank" rel="noopener noreferrer">usage notice</a> before reusing these estimates.</p>
+      <p>Data sourced from the <a href="https://github.com/GreenAlgorithms/green-algorithms-tool?tab=readme-ov-file#credits" target="_blank" rel="noopener noreferrer">Green Algorithms calculator</a>. Please review their <a href="https://green-algorithms.org/usage-notice" target="_blank" rel="noopener noreferrer">usage notice</a> before reusing these estimates.</p>
       <p class="app-footer__note">Most of this website was generated with GPT-5 Codex.</p>
     </footer>
   </div>
