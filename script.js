@@ -1838,10 +1838,10 @@ function renderTreeImpactTable(providerCode, selectedRegionName, machinePowerWat
             <tr${row.isSelected ? ' class="is-selected"' : ''}>
               <th scope="row">${row.regionName}</th>
               <td data-label="Location">${row.location}</td>
-              <td data-label="Tree-years">${srText}${meterHtml}${scaleHtml}<span class="tree-value"><span class="tree-value__row"><span class="tree-value__number">${row.treeYears.toFixed(2)}</span><span class="tree-value__unit">tree-years</span></span>${breakdownHtml}</span></td>
+              <td class="tree-impact__cell tree-impact__cell--trees" data-label="Tree-years">${srText}${meterHtml}${scaleHtml}<span class="tree-value"><span class="tree-value__row"><span class="tree-value__number">${row.treeYears.toFixed(2)}</span><span class="tree-value__unit">tree-years</span></span>${breakdownHtml}</span></td>
               <td data-label="Carbon">${row.carbon.toFixed(2)}</td>
               <td data-label="Efficiency">${efficiency}</td>
-              <td>${sampleTag}</td>
+              <td class="tree-impact__cell tree-impact__cell--tag">${sampleTag}</td>
             </tr>
           `;
         })

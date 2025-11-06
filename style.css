@@ -1038,6 +1038,7 @@ body.is-ready .logo__spark {
   padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid rgba(0, 54, 61, 0.08);
+  vertical-align: top;
 }
 
 .tree-impact__table thead {
@@ -1234,6 +1235,7 @@ body.is-ready .logo__spark {
   align-items: flex-end;
   gap: 4px;
   margin-right: 10px;
+  flex-wrap: nowrap;
 }
 
 .tree-meter__item {
@@ -1429,6 +1431,21 @@ body.is-ready .logo__spark {
   .tree-impact__provider-count {
     align-self: flex-start;
   }
+
+  .tree-impact__cell--trees {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .tree-impact__cell--trees .tree-meter__item {
+    flex-basis: clamp(16px, 3vw, 22px);
+    width: clamp(16px, 3vw, 22px);
+    height: clamp(18px, 4vw, 26px);
+  }
+
+  .tree-impact__cell--tag {
+    width: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1488,4 +1505,49 @@ body.is-ready .logo__spark {
     align-self: stretch;
     width: 100%;
   }
+}
+.tree-impact__cell {
+  vertical-align: top;
+}
+
+.tree-impact__cell--trees {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 12px;
+  min-width: 220px;
+}
+
+.tree-impact__cell--trees .tree-meter {
+  flex-wrap: wrap;
+  row-gap: 4px;
+  column-gap: 4px;
+  max-width: 100%;
+  margin-right: 0;
+}
+
+.tree-impact__cell--trees .tree-meter__item {
+  flex: 0 0 clamp(18px, 2.2vw, 26px);
+  width: clamp(18px, 2.2vw, 26px);
+  height: clamp(21px, 3vw, 30px);
+}
+
+.tree-impact__cell--trees .tree-meter__scale {
+  order: 2;
+  margin-right: 0;
+}
+
+.tree-impact__cell--trees .tree-value {
+  order: 3;
+  min-width: 120px;
+  word-break: break-word;
+}
+
+.tree-impact__cell--tag {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.tree-impact__cell--tag .tree-sample-tag {
+  display: inline-flex;
 }
