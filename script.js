@@ -9,8 +9,11 @@ const appData = {
 };
 
 const TREE_CO2_ABSORPTION_KG_PER_YEAR = 21.77; // Approximate CO₂ absorption per tree per year
+const MAX_TREE_METER_ICONS = 10;
 
 const SAVED_RUNS_STORAGE_KEY = 'gf_saved_runs_v1';
+const COOKIE_CONSENT_STORAGE_KEY = 'gf_cookie_consent_v1';
+const COOKIE_CONSENT_COOKIE_NAME = 'gf_cookie_consent';
 const MAX_SAVED_RUNS = 12;
 let savedRuns = [];
 let lastResult = null;
@@ -58,7 +61,7 @@ const AWS_FALLBACK_REGIONS = [
   { regionName: 'Africa (Cape Town)', location: 'ZA', locationFree: 'Cape Town, South Africa' },
 ];
 
-function resetTreeImpact(message = 'Run a calculation to compare regions for the selected provider.') {
+function resetTreeImpact(message = 'Run a calculation to compare providers and representative regions.') {
   const tableContainer = document.getElementById('treeImpactTable');
   const hint = document.getElementById('treeImpactHint');
   if (tableContainer) {
@@ -510,6 +513,26 @@ function makeSafeFilenamePart(value, fallback = 'run') {
     .replace(/^-+|-+$/g, '') || fallback;
 }
 
+function getCookie(name) {
+  if (typeof document === 'undefined' || !name) {
+    return null;
+  }
+  const pattern = new RegExp(`(?:^|; )${name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1')}=([^;]*)`);
+  const match = document.cookie.match(pattern);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name, value, options = {}) {
+  if (typeof document === 'undefined' || !name) {
+    return;
+  }
+  const opts = { path: '/', 'max-age': 31536000, SameSite: 'Lax', ...options };
+  const pairs = Object.entries(opts)
+    .filter(([, val]) => val != null && val !== false)
+    .map(([key, val]) => (val === true ? key : `${key}=${val}`));
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value ?? '')}${pairs.length ? `; ${pairs.join('; ')}` : ''}`;
+}
+
 function persistSavedRuns() {
   if (typeof localStorage === 'undefined') return;
   try {
@@ -719,6 +742,8 @@ function applySavedRunToForm(run) {
     regionName,
     cpuKey,
     cpuCount,
+    activeCores,
+    availableCores,
     memoryGb,
     memPower,
     length,
@@ -768,6 +793,17 @@ function applySavedRunToForm(run) {
     cpuCountInput.value = cpuCount;
   }
 
+  const activeCoresInput = document.getElementById('activeCores');
+  if (activeCoresInput) {
+    if (Number.isFinite(activeCores)) {
+      activeCoresInput.value = activeCores;
+    } else if (Number.isFinite(availableCores)) {
+      activeCoresInput.value = availableCores;
+    } else {
+      activeCoresInput.value = '';
+    }
+  }
+
   const memoryInput = document.getElementById('memory');
   if (memoryInput && Number.isFinite(memoryGb)) {
     memoryInput.value = memoryGb;
@@ -812,6 +848,7 @@ function applySavedRunToForm(run) {
     }
   }
 
+  updateActiveCoresGuidance();
   computeFootprint();
 }
 function parseCsv(text) {
@@ -1215,6 +1252,86 @@ function updateCpuHint() {
   hint.textContent = `${cpu.manufacturer} ${cpu.model} • ${cpu.cores} cores • ${cpu.tdp.toFixed(1)} W TDP (${perCore.toFixed(1)} W per core)`;
 }
 
+function updateActiveCoresGuidance() {
+  const cpuKey = document.getElementById('cpu')?.value;
+  const cpuCountValue = parseInt(document.getElementById('cpuCount')?.value, 10);
+  const activeInput = document.getElementById('activeCores');
+  const hint = document.getElementById('activeCoresHint');
+  if (!activeInput || !hint) return;
+
+  const cpu = cpuKey ? appData.cpus[cpuKey] : null;
+  const cpuCount = Number.isFinite(cpuCountValue) && cpuCountValue > 0 ? cpuCountValue : null;
+
+  if (!cpu || !cpuCount) {
+    activeInput.max = '';
+    if (activeInput.value === '') {
+      activeInput.placeholder = '';
+    }
+    hint.textContent = 'Set how many cores will actually run fuzzing workloads.';
+    return;
+  }
+
+  const coresPerCpu = Math.max(1, Math.round(cpu.cores));
+  const totalCores = Math.max(0, coresPerCpu * cpuCount);
+  activeInput.max = totalCores;
+  activeInput.placeholder = String(totalCores);
+
+  const currentValue = parseInt(activeInput.value, 10);
+  if (!Number.isFinite(currentValue) || currentValue < 0) {
+    activeInput.value = String(totalCores);
+  } else if (currentValue > totalCores) {
+    activeInput.value = String(totalCores);
+  }
+
+  const cpuLabel = coresPerCpu === 1 ? 'core' : 'cores';
+  const cpuCountLabel = cpuCount === 1 ? 'CPU' : 'CPUs';
+  hint.textContent = `This hardware exposes ${totalCores} ${cpuLabel} (${coresPerCpu} per CPU × ${cpuCount} ${cpuCountLabel}). Enter how many stay busy during fuzzing.`;
+}
+
+function initCookieConsent() {
+  const banner = document.getElementById('cookieConsent');
+  const button = document.getElementById('cookieConsentButton');
+  if (!banner || !button) return;
+
+  let consentGranted = false;
+  try {
+    consentGranted = typeof localStorage !== 'undefined' && Boolean(localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY));
+  } catch (error) {
+    consentGranted = false;
+  }
+  if (!consentGranted && getCookie(COOKIE_CONSENT_COOKIE_NAME) === 'accepted') {
+    consentGranted = true;
+  }
+
+  if (consentGranted) {
+    return;
+  }
+
+  banner.hidden = false;
+  requestAnimationFrame(() => {
+    banner.classList.add('is-visible');
+  });
+
+  const hideBanner = () => {
+    banner.classList.remove('is-visible');
+    setTimeout(() => {
+      banner.hidden = true;
+    }, 320);
+  };
+
+  button.addEventListener('click', () => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, new Date().toISOString());
+      }
+    } catch (error) {
+      /* ignore storage errors */
+    }
+    setCookie(COOKIE_CONSENT_COOKIE_NAME, 'accepted');
+    hideBanner();
+  });
+}
+
 function setupTrialModeControls() {
   const totalInputs = document.getElementById('trialInputsTotal');
   const perPairInputs = document.getElementById('trialInputsPerPair');
@@ -1248,9 +1365,30 @@ document.getElementById('provider').addEventListener('change', () => {
 });
 document.getElementById('region').addEventListener('change', () => {
   updateRegionHint();
-  resetTreeImpact('Compute again to update the tree-year comparison.');
+  resetTreeImpact('Compute again to refresh the cross-provider comparison.');
 });
-document.getElementById('cpu').addEventListener('change', updateCpuHint);
+document.getElementById('cpu').addEventListener('change', () => {
+  updateCpuHint();
+  updateActiveCoresGuidance();
+  resetTreeImpact('Compute again to refresh the cross-provider comparison.');
+});
+
+const cpuCountInput = document.getElementById('cpuCount');
+if (cpuCountInput) {
+  cpuCountInput.addEventListener('input', updateActiveCoresGuidance);
+  cpuCountInput.addEventListener('change', updateActiveCoresGuidance);
+}
+
+const activeCoresInput = document.getElementById('activeCores');
+if (activeCoresInput) {
+  activeCoresInput.addEventListener('change', () => {
+    const value = parseInt(activeCoresInput.value, 10);
+    if (!Number.isFinite(value) || value < 0) {
+      activeCoresInput.value = '';
+    }
+    updateActiveCoresGuidance();
+  });
+}
 
 const saveResultButton = document.getElementById('saveResultButton');
 if (saveResultButton) {
@@ -1282,6 +1420,7 @@ onReady(() => {
   initReactiveBackground();
   loadSavedRunsFromStorage();
   toggleResultActions(Boolean(lastResult));
+  initCookieConsent();
   // start the header scramble animation (respect prefers-reduced-motion)
   try {
     if (!prefersReducedMotion()) startHeaderScramble();
@@ -1291,6 +1430,7 @@ onReady(() => {
 });
 
 setupTrialModeControls();
+updateActiveCoresGuidance();
 window.onload = loadData;
 
 function setRestartButtonsHidden(isHidden) {
@@ -1331,6 +1471,8 @@ function computeFootprint() {
   const regionName = document.getElementById('region').value;
   const cpuKey = document.getElementById('cpu').value;
   const cpuCount = parseInt(document.getElementById('cpuCount').value, 10);
+  const activeCoresInput = document.getElementById('activeCores');
+  const activeCoresRaw = parseInt(activeCoresInput?.value, 10);
   const memoryGb = parseFloat(document.getElementById('memory').value);
   const memPower = parseFloat(document.getElementById('memPower').value) || appData.memPowerDefault;
   const length = parseFloat(document.getElementById('length').value);
@@ -1345,7 +1487,7 @@ function computeFootprint() {
     !Number.isFinite(memPower) || memPower < 0 ||
     !Number.isFinite(length) || length <= 0
   ) {
-    resetTreeImpact('Complete the fields and compute to view tree comparisons.');
+    resetTreeImpact('Complete the fields and compute to view provider comparisons.');
     alert('Please complete all fields with valid values.');
     return;
   }
@@ -1363,7 +1505,7 @@ function computeFootprint() {
       !Number.isFinite(fuzzingPairs) || fuzzingPairs <= 0 ||
       !Number.isFinite(trialsPerPair) || trialsPerPair <= 0
     ) {
-      resetTreeImpact('Complete the fields and compute to view tree comparisons.');
+      resetTreeImpact('Complete the fields and compute to view provider comparisons.');
       alert('Please enter valid values for the number of pairs and trials per pair.');
       return;
     }
@@ -1372,7 +1514,7 @@ function computeFootprint() {
   } else {
     manualTotalTrials = parseInt(document.getElementById('totalTrials').value, 10);
     if (!Number.isFinite(manualTotalTrials) || manualTotalTrials <= 0) {
-      resetTreeImpact('Complete the fields and compute to view tree comparisons.');
+    resetTreeImpact('Complete the fields and compute to view provider comparisons.');
       alert('Please enter a valid total number of trials.');
       return;
     }
@@ -1384,11 +1526,33 @@ function computeFootprint() {
   const cpu = appData.cpus[cpuKey];
   if (!region || !cpu) {
     alert('Selected region or CPU data could not be found.');
-    resetTreeImpact('Run a calculation to compare regions for the selected provider.');
+    resetTreeImpact('Run a calculation to compare regions across every provider.');
     return;
   }
 
-  const cpuPowerWatts = cpu.tdp * cpuCount;
+  const coresPerCpu = Math.max(1, Math.round(cpu.cores));
+  const totalAvailableCores = Math.max(0, coresPerCpu * cpuCount);
+  if (totalAvailableCores <= 0) {
+    alert('Unable to determine the number of available cores for the selected CPU. Please choose a different processor or adjust the CPU count.');
+    return;
+  }
+
+  let activeCores = Number.isFinite(activeCoresRaw) ? activeCoresRaw : totalAvailableCores;
+  if (activeCores < 0 || activeCores > totalAvailableCores) {
+    alert(`Active cores must be between 0 and ${totalAvailableCores}.`);
+    return;
+  }
+  activeCores = Math.round(activeCores);
+  if (activeCoresInput) {
+    activeCoresInput.value = String(activeCores);
+  }
+
+  const perCoreWatts = cpu.tdp / cpu.cores;
+  if (!Number.isFinite(perCoreWatts) || perCoreWatts < 0) {
+    alert('CPU data missing a valid per-core power figure. Please choose another processor.');
+    return;
+  }
+  const cpuPowerWatts = perCoreWatts * activeCores;
   const memoryPowerWatts = memoryGb * memPower;
   const machinePowerWatts = cpuPowerWatts + memoryPowerWatts;
   const energyKWh = (machinePowerWatts / 1000) * totalHours * region.pue;
@@ -1410,8 +1574,9 @@ function computeFootprint() {
 
   const resultCpu = document.getElementById('resultCpu');
   if (resultCpu) {
-    const perCore = cpu.tdp / cpu.cores;
-    resultCpu.textContent = `CPU data: ${cpu.model} (${cpu.cores} cores, ${cpu.tdp.toFixed(1)} W TDP, ${cpuCount}× CPUs, ${perCore.toFixed(1)} W/core)`;
+    const perCore = perCoreWatts;
+    const activeSummary = `${activeCores}/${totalAvailableCores} core${totalAvailableCores === 1 ? '' : 's'} active`;
+    resultCpu.textContent = `CPU data: ${cpu.model} (${cpu.cores} cores, ${cpu.tdp.toFixed(1)} W TDP, ${cpuCount}× CPUs, ${perCore.toFixed(1)} W/core, ${activeSummary})`;
   }
 
   renderTreeImpactTable(providerCode, regionName, machinePowerWatts, totalHours);
@@ -1425,6 +1590,8 @@ function computeFootprint() {
     regionName,
     cpuKey,
     cpuCount,
+    activeCores,
+    availableCores: totalAvailableCores,
     memoryGb,
     memPower,
     length,
@@ -1449,6 +1616,8 @@ function computeFootprint() {
     cpuKey,
     cpuLabel: getSelectedOptionText('cpu') || cpuKey,
     cpuCount,
+    activeCores,
+    availableCores: totalAvailableCores,
     memoryGb,
     memPower,
     length,
@@ -1466,92 +1635,253 @@ function computeFootprint() {
   enterResultsMode();
 }
 
+function formatTreeBreakdown(treeYears) {
+  const safeYears = Number.isFinite(treeYears) ? Math.max(treeYears, 0) : 0;
+  let wholeTrees = Math.floor(safeYears);
+  let fractional = safeYears - wholeTrees;
+  let percent = Math.round(fractional * 100);
+  if (percent === 100) {
+    wholeTrees += 1;
+    percent = 0;
+  }
+
+  const parts = [];
+  if (wholeTrees > 0) {
+    parts.push(`${wholeTrees} full tree${wholeTrees === 1 ? '' : 's'}`);
+  }
+  if (percent > 0) {
+    parts.push(`${percent}% of a tree`);
+  }
+  return parts.join(' + ');
+}
+
+function createTreeMeter(treeYears) {
+  const safeYears = Number.isFinite(treeYears) ? Math.max(treeYears, 0) : 0;
+  const yearsPerIcon = safeYears > MAX_TREE_METER_ICONS ? Math.ceil(safeYears / MAX_TREE_METER_ICONS) : 1;
+  const fullIcons = Math.floor(safeYears / yearsPerIcon);
+  const remainderYears = safeYears - (fullIcons * yearsPerIcon);
+  const hasPartial = remainderYears > 1e-6;
+  const iconCount = Math.max(1, fullIcons + (hasPartial ? 1 : 0));
+  const icons = [];
+
+  for (let i = 0; i < iconCount; i += 1) {
+    let fill = 1;
+    if (safeYears === 0) {
+      fill = 0;
+    } else if (i < fullIcons) {
+      fill = 1;
+    } else if (hasPartial && i === fullIcons) {
+      fill = remainderYears / yearsPerIcon;
+    } else if (fullIcons === 0 && !hasPartial) {
+      fill = 1;
+    }
+    fill = Math.min(Math.max(fill, 0), 1);
+    icons.push(`<span class="tree-meter__item" style="--fill:${fill.toFixed(3)}"></span>`);
+  }
+
+  const scaleLabel = yearsPerIcon > 1 ? `1 tree ≈ ${yearsPerIcon} tree-years` : '';
+  const scaleAttr = yearsPerIcon > 1 ? ` data-years-per-icon="${yearsPerIcon}"` : '';
+  return {
+    meterHtml: `<span class="tree-meter"${scaleAttr} aria-hidden="true">${icons.join('')}</span>`,
+    yearsPerIcon,
+    scaleLabel,
+  };
+}
+
+function pickRandomEntry(pool, takenSet) {
+  if (!Array.isArray(pool) || !pool.length) return null;
+  const available = pool.filter((entry) => entry && !takenSet.has(entry.regionName));
+  if (!available.length) return null;
+  const index = Math.floor(Math.random() * available.length);
+  return available[index];
+}
+
+function selectSampledRegions(metrics, selectedRegionName) {
+  if (!Array.isArray(metrics) || !metrics.length) return [];
+  const picks = [];
+  const taken = new Set();
+
+  const addPick = (entry, label, priority = 1) => {
+    if (!entry || taken.has(entry.regionName)) return;
+    taken.add(entry.regionName);
+    picks.push({
+      ...entry,
+      sampleLabel: label,
+      priority,
+    });
+  };
+
+  const selectedEntry = selectedRegionName
+    ? metrics.find((entry) => entry.regionName === selectedRegionName)
+    : null;
+  if (selectedEntry) {
+    addPick(selectedEntry, 'Current setup', 0);
+  }
+
+  const sortedByTreeYears = [...metrics].sort((a, b) => a.treeYears - b.treeYears);
+  const topPool = sortedByTreeYears.slice(0, Math.min(3, sortedByTreeYears.length));
+  const bottomPool = sortedByTreeYears.slice(
+    Math.max(sortedByTreeYears.length - 3, 0),
+    sortedByTreeYears.length,
+  );
+
+  const topPick = pickRandomEntry(topPool, taken);
+  if (topPick) {
+    addPick(topPick, 'Top performer');
+  }
+
+  const bottomPick = pickRandomEntry(bottomPool, taken);
+  if (bottomPick) {
+    addPick(bottomPick, 'Bottom performer');
+  }
+
+  const randomPool = metrics.filter((entry) => !taken.has(entry.regionName));
+  if (randomPool.length) {
+    const randomPick = randomPool[Math.floor(Math.random() * randomPool.length)];
+    addPick(randomPick, 'Random pick');
+  }
+
+  if (!picks.length) {
+    addPick(metrics[0], 'Selection');
+  }
+
+  picks.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.treeYears - b.treeYears;
+  });
+
+  return picks;
+}
+
 function renderTreeImpactTable(providerCode, selectedRegionName, machinePowerWatts, totalHours) {
   const tableContainer = document.getElementById('treeImpactTable');
   const hint = document.getElementById('treeImpactHint');
   if (!tableContainer || !hint) return;
 
-  const provider = appData.providers[providerCode];
-  if (!provider) {
-    hint.textContent = 'Run a calculation to compare regions for the selected provider.';
+  const providers = appData.providers || {};
+  const providerEntries = Object.entries(providers);
+  if (!providerEntries.length) {
+    hint.textContent = 'Provider data is unavailable. Update the dataset and try again.';
     tableContainer.innerHTML = '';
     return;
   }
 
-  const entries = Object.entries(provider.regions || {});
-  if (!entries.length) {
-    hint.textContent = 'No regional data available for this provider yet.';
-    tableContainer.innerHTML = '';
-    return;
+  const orderedEntries = [];
+  if (providerCode && providers[providerCode]) {
+    orderedEntries.push([providerCode, providers[providerCode]]);
   }
+  providerEntries
+    .filter(([code]) => code !== providerCode)
+    .sort((a, b) => (a[1].name || a[0]).localeCompare(b[1].name || b[0]))
+    .forEach((entry) => orderedEntries.push(entry));
 
-  const rows = entries
-    .map(([regionName, region]) => {
-      const energy = (machinePowerWatts / 1000) * totalHours * region.pue;
-      const carbon = (energy * region.carbonIntensity) / 1000;
-      if (!Number.isFinite(carbon)) {
-        return null;
+  const sections = orderedEntries
+    .map(([code, provider]) => {
+      const regionEntries = Object.entries(provider.regions || {});
+      if (!regionEntries.length) {
+        return '';
       }
-      const treeYears = carbon / TREE_CO2_ABSORPTION_KG_PER_YEAR;
-      return {
-        regionName,
-        location: region.location || region.locationFree || 'Unknown location',
-        pue: region.pue,
-        carbon,
-        treeYears,
-        ci: region.carbonIntensity,
-        isSelected: regionName === selectedRegionName,
+
+      const metrics = regionEntries
+        .map(([regionName, region]) => {
+          const energy = (machinePowerWatts / 1000) * totalHours * region.pue;
+          const carbon = (energy * region.carbonIntensity) / 1000;
+          if (!Number.isFinite(carbon)) {
+            return null;
+          }
+          const treeYears = carbon / TREE_CO2_ABSORPTION_KG_PER_YEAR;
+          return {
+            providerCode: code,
+            regionName,
+            location: region.location || region.locationFree || 'Unknown location',
+            pue: region.pue,
+            carbon,
+            treeYears,
+            ci: region.carbonIntensity,
+            isSelected: code === providerCode && regionName === selectedRegionName,
+          };
+        })
+        .filter(Boolean);
+
+      if (!metrics.length) {
+        return '';
+      }
+
+      const sampled = selectSampledRegions(
+        metrics,
+        code === providerCode ? selectedRegionName : null,
+      );
+      if (!sampled.length) {
+        return '';
+      }
+
+      const providerLabel = provider.name || code.toUpperCase();
+      const sampleTagClass = (label) => {
+        if (label === 'Current setup') return 'tree-sample-tag--current';
+        if (label === 'Top performer') return 'tree-sample-tag--top';
+        if (label === 'Bottom performer') return 'tree-sample-tag--bottom';
+        if (label === 'Random pick') return 'tree-sample-tag--random';
+        return 'tree-sample-tag--default';
       };
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.treeYears - b.treeYears);
 
-  if (!rows.length) {
-    hint.textContent = 'Regional carbon data could not be calculated with the current inputs.';
-    tableContainer.innerHTML = '';
-    return;
-  }
+      const rowsHtml = sampled
+        .map((row) => {
+          const { meterHtml, yearsPerIcon, scaleLabel } = createTreeMeter(row.treeYears);
+          const srNote = yearsPerIcon > 1 ? ` Each tree icon represents approximately ${yearsPerIcon} tree-years.` : '';
+          const srText = `<span class="sr-only">${row.treeYears.toFixed(2)} tree-years.${srNote}</span>`;
+          const scaleHtml = scaleLabel ? `<span class="tree-meter__scale" aria-hidden="true">${scaleLabel}</span>` : '';
+          const breakdown = formatTreeBreakdown(row.treeYears);
+          const breakdownHtml = breakdown ? `<span class="tree-value__breakdown">≈ ${breakdown}</span>` : '';
+          const efficiency = `PUE ${row.pue.toFixed(2)} • CI ${row.ci.toFixed(1)} g/kWh`;
+          const sampleTag = `<span class="tree-sample-tag ${sampleTagClass(row.sampleLabel)}">${row.sampleLabel}</span>`;
+          return `
+            <tr${row.isSelected ? ' class="is-selected"' : ''}>
+              <th scope="row">${row.regionName}</th>
+              <td data-label="Location">${row.location}</td>
+              <td data-label="Tree-years">${srText}${meterHtml}${scaleHtml}<span class="tree-value"><span class="tree-value__row"><span class="tree-value__number">${row.treeYears.toFixed(2)}</span><span class="tree-value__unit">tree-years</span></span>${breakdownHtml}</span></td>
+              <td data-label="Carbon">${row.carbon.toFixed(2)}</td>
+              <td data-label="Efficiency">${efficiency}</td>
+              <td>${sampleTag}</td>
+            </tr>
+          `;
+        })
+        .join('');
 
-  hint.textContent = 'Lower tree-years indicate less time a mature tree would need to offset the emissions.';
-
-  const header = `
-    <table>
-      <thead>
-        <tr>
-          <th scope="col">Region</th>
-          <th scope="col">Location</th>
-          <th scope="col">Tree-years</th>
-          <th scope="col">Carbon (kg CO₂e)</th>
-          <th scope="col">Efficiency</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  const body = rows
-    .map((row) => {
-      const iconCount = Math.max(1, Math.round(Math.min(row.treeYears, 5)));
-      const icons = Array.from({ length: iconCount })
-        .map(() => '<span class="tree-icon" aria-hidden="true">🌳</span>')
-        .join('') + (row.treeYears > 5 ? '<span class="tree-icon tree-icon--more" aria-hidden="true">+</span>' : '');
-      const srText = `<span class="sr-only">${row.treeYears.toFixed(2)} tree-years</span>`;
-      const efficiency = `PUE ${row.pue.toFixed(2)} • CI ${row.ci.toFixed(1)} g/kWh`;
+      const regionCount = metrics.length;
       return `
-        <tr${row.isSelected ? ' class="is-selected"' : ''}>
-          <th scope="row">${row.regionName}</th>
-          <td>${row.location}</td>
-          <td data-label="Tree-years">${srText}<span class="tree-icons" aria-hidden="true">${icons}</span><span class="tree-value">${row.treeYears.toFixed(2)}</span></td>
-          <td data-label="Carbon">${row.carbon.toFixed(2)}</td>
-          <td data-label="Efficiency">${efficiency}</td>
-        </tr>
+        <section class="tree-impact__provider">
+          <header class="tree-impact__provider-header">
+            <h4 class="tree-impact__provider-name">${providerLabel}</h4>
+            <span class="tree-impact__provider-count">${regionCount} region${regionCount === 1 ? '' : 's'}</span>
+          </header>
+          <div class="tree-impact__provider-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Region</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Tree-years</th>
+                  <th scope="col">Carbon (kg CO₂e)</th>
+                  <th scope="col">Efficiency</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
+        </section>
       `;
     })
-    .join('');
+    .filter(Boolean);
 
-  const footer = `
-      </tbody>
-    </table>
-  `;
+  if (!sections.length) {
+    hint.textContent = 'Regional comparisons could not be generated with the current inputs.';
+    tableContainer.innerHTML = '';
+    return;
+  }
 
-  tableContainer.innerHTML = `${header}${body}${footer}`;
+  hint.textContent = 'Each provider shows your configuration (if applicable), one of the three lowest and highest tree-year regions, plus a random pick. Tree icons represent one tree-year (bundled when totals exceed ten); partially filled icons show remaining fractions.';
+  tableContainer.innerHTML = sections.join('');
 }

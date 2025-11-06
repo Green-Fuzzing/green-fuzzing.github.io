@@ -12,6 +12,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="cookie-consent" id="cookieConsent" hidden>
+    <div class="cookie-consent__content">
+      <p class="cookie-consent__message"><strong>EU visitors:</strong> we use a single, strictly necessary browser cookie to remember that you approved storage. We only persist your fuzzing calculation results locally so you can reload them later—no analytics or tracking.</p>
+      <button type="button" class="cookie-consent__action" id="cookieConsentButton">Allow storage</button>
+    </div>
+  </div>
   <div class="ambient-scene" aria-hidden="true">
     <span class="ambient-scene__icon ambient-scene__icon--tree" style="--origin-x: 18%; --origin-y: 24%; --size: 160px; --depth: 1.6; --offset-x: -24px; --offset-y: -26px; --delay: -1.2s;">
       <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
@@ -151,6 +157,11 @@
                 <input type="number" id="cpuCount" value="1" min="1" step="1" />
               </div>
               <div class="form-field">
+                <label for="activeCores">Active Cores Used:</label>
+                <input type="number" id="activeCores" min="0" step="1" inputmode="numeric" />
+                <p class="hint" id="activeCoresHint">Set how many cores will actually run fuzzing workloads.</p>
+              </div>
+              <div class="form-field">
                 <label for="memory">Memory per Machine (GB):</label>
                 <input type="number" id="memory" value="16" min="0" step="1" />
               </div>
@@ -206,7 +217,7 @@
             <p class="disclaimer">*This is a rough estimate based on the inputs above.</p>
             <section class="tree-impact" aria-live="polite">
               <h3>Tree-Year Impact by Region</h3>
-              <p class="hint" id="treeImpactHint">Run a calculation to compare regions for the selected provider.</p>
+              <p class="hint" id="treeImpactHint">Run a calculation to compare providers and representative regions.</p>
               <div class="tree-impact__table" id="treeImpactTable"></div>
             </section>
             <section class="saved-runs" aria-live="polite">
@@ -228,6 +239,7 @@
     <footer class="app-footer">
       <p>Data sourced from the <a href="https://github.com/GreenAlgorithms/green-algorithms-tool?tab=readme-ov-file#credits" target="_blank" rel="noopener noreferrer">Green Algorithms calculator</a>. Please review their <a href="https://green-algorithms.org/usage-notice" target="_blank" rel="noopener noreferrer">usage notice</a> before reusing these estimates.</p>
       <p class="app-footer__note">Most of this website was generated with GPT-5 Codex.</p>
+      <p class="app-footer__footnote"><strong>Tree-year definition:</strong> One tree-year represents how long a fully grown tree would need to sequester the same carbon, following the Green Algorithms baseline of 21.77&nbsp;kg CO2e per mature temperate tree per year. The comparison table highlights one tree icon per tree-year (or a scaled bundle when totals grow large) and partially fills the final tree to show the remaining fraction, so idle portions of a tree-year remain transparent. Source: <a href="https://doi.org/10.1002/advs.202100707" target="_blank" rel="noopener noreferrer">Lannelongue et&nbsp;al., Advanced Science 2021</a>.</p>
     </footer>
   </div>
   <script src="script.js"></script>

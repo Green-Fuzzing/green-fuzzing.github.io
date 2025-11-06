@@ -5,8 +5,9 @@ This static web experience estimates the environmental impact of a fuzzing campa
 ## Features
 - **Dataset-driven inputs** – Providers, regions, CPU models, and carbon intensity figures are loaded from the `data/GA-data` submodule so the calculator always reflects the latest Green Algorithms reference data.
 - **Comprehensive calculator** – Capture CPUs per machine, memory allocation, fuzzing trial counts, and more to generate a detailed emissions estimate.
-- **Regional comparisons** – See how the campaign would perform in every region offered by the selected provider, including an easy-to-scan tree-year impact table.
+- **Regional comparisons** – Sample efficient, inefficient, and random regions for every provider (plus your current setup) using the Green Algorithms tree-year baseline of 21.77&nbsp;kg CO₂e per mature tree-year<sup>†</sup>.
 - **MPI-SP themed UI** – Responsive, two-column layout with MPI-SP colours, gradients, and glassmorphism-inspired cards.
+- **Transparent storage** – A single consent cookie (for EU compliance) and browser-local storage keep your saved runs on your device only—no analytics or external tracking.
 
 ## Getting started
 1. Clone the repository.
@@ -31,6 +32,10 @@ Because the site is fully static you can also open `index.html` directly in a br
 
 Guidance below the form updates as you change selections so you can quickly see which combinations are most efficient.
 
+## Privacy & storage
+- The app shows an EU-friendly consent notice the first time you visit; acknowledging it stores a single strictly necessary cookie so we avoid asking again.
+- Saved fuzzing scenarios never leave your device—they remain in `localStorage` so you can reload them later. Clear the saved runs list to remove them.
+
 ## Updating the data
 The Green Algorithms dataset is tracked as a Git submodule pointing to `https://github.com/GreenAlgorithms/GA-data`. To refresh the calculator with a newer revision:
 
@@ -50,3 +55,5 @@ After updating, rebuild or reload the page to pull in the latest CSV files.
 Please respect the [Green Algorithms usage notice](https://green-algorithms.org/usage-notice) when reusing the dataset or derived results. The calculator UI is provided for experimentation purposes; adapt it to your own workflow as needed.
 
 > Most of this website was generated using GPT-5 Codex.
+
+<sup>†</sup>Source: Lannelongue et&nbsp;al., “[Green Algorithms: Quantifying the Carbon Footprint of Computation](https://doi.org/10.1002/advs.202100707)”, *Advanced Science* 8(12), 2021.
