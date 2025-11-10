@@ -138,39 +138,143 @@
           <form id="calculator" class="calculator">
             <div class="calculator__grid">
               <div class="form-field">
-                <label for="provider">Cloud Provider:</label>
+                <div class="form-field__label">
+                  <label for="provider">Cloud Provider:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="provider"
+                    aria-describedby="definition-provider-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Cloud Provider"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-provider-popup"></span>
+                  </button>
+                </div>
                 <select id="provider"></select>
                 <p class="hint" id="providerHint">Choose a provider to view its available regions.</p>
               </div>
               <div class="form-field">
-                <label for="region">Region / Data Centre:</label>
+                <div class="form-field__label">
+                  <label for="region">Region / Data Centre:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="region"
+                    aria-describedby="definition-region-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Region / Data Centre"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-region-popup"></span>
+                  </button>
+                </div>
                 <select id="region"></select>
                 <p class="hint" id="regionHint">Region-specific efficiency and carbon data will appear here.</p>
               </div>
               <div class="form-field">
-                <label for="cpu">CPU Model:</label>
+                <div class="form-field__label">
+                  <label for="cpu">CPU Model:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="cpu"
+                    aria-describedby="definition-cpu-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for CPU Model"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-cpu-popup"></span>
+                  </button>
+                </div>
                 <select id="cpu"></select>
                 <p class="hint" id="cpuHint">Select a CPU to load its TDP and core count.</p>
               </div>
               <div class="form-field">
-                <label for="cpuCount">CPUs per Machine:</label>
+                <div class="form-field__label">
+                  <label for="cpuCount">CPUs per Machine:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="cpuCount"
+                    aria-describedby="definition-cpuCount-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for CPUs per Machine"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-cpuCount-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="cpuCount" value="1" min="1" step="1" />
               </div>
               <div class="form-field">
-                <label for="activeCores">Active Cores Used:</label>
+                <div class="form-field__label">
+                  <label for="activeCores">Active Cores Used:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="activeCores"
+                    aria-describedby="definition-activeCores-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Active Cores Used"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-activeCores-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="activeCores" min="0" step="1" inputmode="numeric" />
                 <p class="hint" id="activeCoresHint">Set how many cores will actually run fuzzing workloads.</p>
               </div>
               <div class="form-field">
-                <label for="memory">Memory per Machine (GB):</label>
+                <div class="form-field__label">
+                  <label for="memory">Memory per Machine (GB):</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="memory"
+                    aria-describedby="definition-memory-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Memory per Machine"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-memory-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="memory" value="16" min="0" step="1" />
               </div>
               <div class="form-field">
-                <label for="memPower">Memory Power per GB (W):</label>
+                <div class="form-field__label">
+                  <label for="memPower">Memory Power per GB (W):</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="memPower"
+                    aria-describedby="definition-memPower-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Memory Power per GB"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-memPower-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="memPower" step="0.01" />
               </div>
               <div class="form-field">
-                <label for="length">Campaign Length per Trial (hours):</label>
+                <div class="form-field__label">
+                  <label for="length">Campaign Length per Trial (hours):</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="length"
+                    aria-describedby="definition-length-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Campaign Length per Trial"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-length-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="length" value="1" step="0.1" />
               </div>
             </div>
@@ -178,22 +282,61 @@
               <legend>Trial Setup</legend>
               <div class="trial-mode-options">
                 <label class="trial-mode-option">
-                  <input type="radio" name="trialMode" value="total" checked />
+                  <input type="radio" name="trialMode" value="total" />
                   <span>Enter total number of trials</span>
                 </label>
                 <label class="trial-mode-option">
-                  <input type="radio" name="trialMode" value="pairs" />
-                  <span>Define by fuzzer-target pair</span>
+                  <input type="radio" name="trialMode" value="pairs" checked />
+                  <span>Define by fuzzer-program pair</span>
                 </label>
               </div>
-              <div class="trial-inputs" id="trialInputsTotal">
-                <label for="totalTrials">Total Trials (all runs):</label>
+              <div class="trial-inputs" id="trialInputsTotal" hidden>
+                <div class="form-field__label">
+                  <label for="totalTrials">Total Trials (all runs):</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="totalTrials"
+                    aria-describedby="definition-totalTrials-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Total Trials"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-totalTrials-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="totalTrials" value="1" min="1" />
               </div>
-              <div class="trial-inputs" id="trialInputsPerPair" hidden>
-                <label for="fuzzingPairs">Fuzzer × Target pairs:</label>
+              <div class="trial-inputs" id="trialInputsPerPair">
+                <div class="form-field__label">
+                  <label for="fuzzingPairs">Fuzzer × Program pairs:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="fuzzingPairs"
+                    aria-describedby="definition-fuzzingPairs-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Fuzzer × Program pairs"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-fuzzingPairs-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="fuzzingPairs" value="1" min="1" />
-                <label for="trialsPerPair">Trials per pair:</label>
+                <div class="form-field__label">
+                  <label for="trialsPerPair">Trials per pair:</label>
+                  <button
+                    type="button"
+                    class="definition-trigger"
+                    data-definition-key="trialsPerPair"
+                    aria-describedby="definition-trialsPerPair-popup"
+                    aria-expanded="false"
+                    aria-label="Definition for Trials per pair"
+                  >
+                    <span aria-hidden="true">?</span>
+                    <span class="definition-popup" role="tooltip" id="definition-trialsPerPair-popup"></span>
+                  </button>
+                </div>
                 <input type="number" id="trialsPerPair" value="1" min="1" />
               </div>
             </fieldset>

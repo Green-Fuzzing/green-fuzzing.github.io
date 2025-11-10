@@ -11,6 +11,20 @@ const appData = {
 const TREE_CO2_ABSORPTION_KG_PER_YEAR = 21.77; // Approximate CO₂ absorption per tree per year
 const MAX_TREE_METER_ICONS = 10;
 
+const FIELD_DEFINITIONS = {
+  provider: 'Select the cloud provider from the Green Algorithms dataset so the calculator can load the right regions and power data.',
+  region: 'Pick a region or data centre to supply the PUE and grid carbon intensity values that drive the estimate.',
+  cpu: 'Choose a CPU model to load its TDP and core count; these determine the compute portion of the machine power budget.',
+  cpuCount: 'Number of physical CPU packages installed in each machine; the machine energy scales with this count.',
+  activeCores: 'How many cores will actually execute fuzzing workloads; idle cores still draw some power but run at lower utilization.',
+  memory: 'Amount of RAM provisioned to each machine (GB); this is multiplied by the memory power rating to capture its energy draw.',
+  memPower: 'Watts per GB of RAM. Defaults to the Green Algorithms reference (0.3725 W/GB) but override it if you know your memory kit rating.',
+  length: 'Average duration of one trial, in hours. Longer trials increase total machine-hours and therefore energy.',
+  totalTrials: 'Total number of fuzzing runs across every machine. Use this when you already know the aggregate trial count.',
+  fuzzingPairs: 'Count of unique fuzzer × program combinations; combine it with trials per pair to derive the overall volume.',
+  trialsPerPair: 'Number of executions per fuzzer-target pair; multiply by the pair count to get the campaign total.',
+};
+
 const SAVED_RUNS_STORAGE_KEY = 'gf_saved_runs_v1';
 const COOKIE_CONSENT_STORAGE_KEY = 'gf_cookie_consent_v1';
 const COOKIE_CONSENT_COOKIE_NAME = 'gf_cookie_consent';
@@ -364,6 +378,74 @@ function initReactiveBackground() {
   window.addEventListener('blur', resetCursor);
   window.addEventListener('resize', () => {
     setBackgroundCursor(lastPointerPosition.x, lastPointerPosition.y);
+  });
+}
+
+function initDefinitionPopups() {
+  const triggers = Array.from(document.querySelectorAll('.definition-trigger'));
+  if (!triggers.length) {
+    return;
+  }
+
+  let activeTrigger = null;
+
+  const closeTrigger = (trigger) => {
+    if (!trigger) return;
+    trigger.classList.remove('definition-trigger--open');
+    trigger.setAttribute('aria-expanded', 'false');
+  };
+
+  const closeActiveTrigger = () => {
+    if (activeTrigger) {
+      closeTrigger(activeTrigger);
+      activeTrigger = null;
+    }
+  };
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.definition-trigger')) {
+      closeActiveTrigger();
+    }
+  });
+
+  triggers.forEach((trigger) => {
+    const key = trigger.dataset.definitionKey;
+    const tooltip = trigger.querySelector('.definition-popup');
+    if (tooltip) {
+      tooltip.textContent = FIELD_DEFINITIONS[key] || '';
+    }
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const isOpen = trigger.classList.toggle('definition-trigger--open');
+      trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (isOpen) {
+        if (activeTrigger && activeTrigger !== trigger) {
+          closeTrigger(activeTrigger);
+        }
+        activeTrigger = trigger;
+      } else if (activeTrigger === trigger) {
+        activeTrigger = null;
+      }
+    });
+
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeTrigger(trigger);
+        if (activeTrigger === trigger) {
+          activeTrigger = null;
+        }
+      }
+    });
+
+    trigger.addEventListener('blur', () => {
+      if (trigger.classList.contains('definition-trigger--open')) {
+        closeTrigger(trigger);
+        if (activeTrigger === trigger) {
+          activeTrigger = null;
+        }
+      }
+    });
   });
 }
 
@@ -821,7 +903,7 @@ function applySavedRunToForm(run) {
   }
 
   const trialRadios = Array.from(document.querySelectorAll('input[name="trialMode"]'));
-  const activeMode = trialMode || 'total';
+  const activeMode = trialMode || 'pairs';
   const targetRadio = trialRadios.find((radio) => radio.value === activeMode);
   if (targetRadio) {
     targetRadio.checked = true;
@@ -1342,7 +1424,7 @@ function setupTrialModeControls() {
   }
 
   const updateVisibility = () => {
-    const selected = document.querySelector('input[name="trialMode"]:checked')?.value || 'total';
+    const selected = document.querySelector('input[name="trialMode"]:checked')?.value || 'pairs';
     if (selected === 'pairs') {
       perPairInputs.removeAttribute('hidden');
       totalInputs.setAttribute('hidden', '');
@@ -1418,6 +1500,7 @@ restartButtons.forEach((button) => {
 onReady(() => {
   document.body.classList.add('is-ready');
   initReactiveBackground();
+  initDefinitionPopups();
   loadSavedRunsFromStorage();
   toggleResultActions(Boolean(lastResult));
   initCookieConsent();
@@ -1476,7 +1559,7 @@ function computeFootprint() {
   const memoryGb = parseFloat(document.getElementById('memory').value);
   const memPower = parseFloat(document.getElementById('memPower').value) || appData.memPowerDefault;
   const length = parseFloat(document.getElementById('length').value);
-  const trialMode = document.querySelector('input[name="trialMode"]:checked')?.value || 'total';
+  const trialMode = document.querySelector('input[name="trialMode"]:checked')?.value || 'pairs';
 
   if (
     !providerCode ||
@@ -1838,7 +1921,18 @@ function renderTreeImpactTable(providerCode, selectedRegionName, machinePowerWat
             <tr${row.isSelected ? ' class="is-selected"' : ''}>
               <th scope="row">${row.regionName}</th>
               <td data-label="Location">${row.location}</td>
-              <td class="tree-impact__cell tree-impact__cell--trees" data-label="Tree-years">${srText}${meterHtml}${scaleHtml}<span class="tree-value"><span class="tree-value__row"><span class="tree-value__number">${row.treeYears.toFixed(2)}</span><span class="tree-value__unit">tree-years</span></span>${breakdownHtml}</span></td>
+              <td class="tree-impact__cell tree-impact__cell--trees" data-label="Tree-years">
+                <div class="tree-impact__cell--trees-content">
+                  ${srText}${meterHtml}${scaleHtml}
+                  <span class="tree-value">
+                    <span class="tree-value__row">
+                      <span class="tree-value__number">${row.treeYears.toFixed(2)}</span>
+                      <span class="tree-value__unit">tree-years</span>
+                    </span>
+                    ${breakdownHtml}
+                  </span>
+                </div>
+              </td>
               <td data-label="Carbon">${row.carbon.toFixed(2)}</td>
               <td data-label="Efficiency">${efficiency}</td>
               <td class="tree-impact__cell tree-impact__cell--tag">${sampleTag}</td>
