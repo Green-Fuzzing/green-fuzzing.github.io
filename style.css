@@ -30,9 +30,11 @@ body {
   background: var(--bg-gradient);
   color: var(--text-color);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 36px 18px;
+  justify-content: flex-start;
+  gap: 18px;
+  padding: 0 18px 36px;
   background-attachment: fixed;
   position: relative;
   overflow-x: hidden;
@@ -1649,4 +1651,80 @@ body.is-ready .logo__spark {
 
 .tree-impact__cell--tag .tree-sample-tag {
   display: inline-flex;
+}
+
+.resource-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  width: 100%;
+  background: rgba(242, 245, 244, 0.1);
+  border-bottom: 1px solid rgba(242, 245, 244, 0.18);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0, 27, 31, 0.22);
+}
+
+.resource-bar__inner {
+  max-width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(248, 250, 252, 0.9);
+}
+
+.resource-bar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(242, 245, 244, 0.16);
+  background: rgba(0, 54, 61, 0.18);
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.resource-bar__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(143, 255, 239, 0.32);
+  background: rgba(0, 108, 102, 0.24);
+  box-shadow: 0 10px 22px rgba(0, 36, 40, 0.18);
+}
+
+.resource-bar__link:active {
+  transform: translateY(0);
+}
+
+.resource-bar__link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 108, 102, 0.35);
+  border-color: rgba(143, 255, 239, 0.42);
+}
+
+.resource-bar__muted {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px dashed rgba(242, 245, 244, 0.18);
+  color: rgba(248, 250, 252, 0.78);
+  background: rgba(0, 54, 61, 0.12);
+  white-space: nowrap;
+}
+
+/* If the site is extremely narrow, prefer horizontal scroll over ugly wraps */
+@media (max-width: 420px) {
+  .resource-bar__inner {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
 }
